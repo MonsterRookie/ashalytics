@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ASHAlytics: Safety-Critical AI Copilot for ASHA Workers
 
-## Getting Started
+**ASHAlytics** is a human-in-the-loop AI web application designed to assist Accredited Social Health Activists (ASHAs) in rural India. It analyzes short audio snippets of patient conversations to detect distress patterns, assisting with triage and providing safe, explainable next steps.
 
-First, run the development server:
+## Ethics & Safety (Non-Negotiable)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This system is built with **Safety First** principles:
+1.  **No Diagnosis**: ASHAlytics never diagnoses conditions or prescribes medication.
+2.  **Human Authority**: The ASHA worker is the final decision-maker. The AI provides *advisory* signals only.
+3.  **Privacy**:
+    - No audio is stored on servers permanently (processed ephemerally).
+    - No patient names or biometrics are captured.
+    - Patient tracking is done via **Anonymous Patient Tracking IDs (APT-ID)** stored locally on the device (LocalStorage).
+4.  **No Direct Patient Interaction**: The AI never speaks to the patient. It is a tool for the ASHA worker.
+5.  **Red-Level Protocol**: Immediate "Red" triage triggers a rigid Emergency Playbook (Stay, Involve Family, Contact PHC), bypassing standard conversational scripts.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + Shadcn UI
+- **AI Model**: Google Gemini flash - latest (Server-Side Analysis)
+- **State Management**: React Context + LocalStorage
+- **Audio**: Browser MediaRecorder API -> Base64 -> Server Action
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Features
 
-## Learn More
+- **Real-time Audio Analysis**: Detects emotional tone, somatic symptoms, and psychological markers.
+- **Triage System**: Auto-classifies into Green (Low), Amber (Moderate), or Red (Critical) with visual status indicators.
+- **White-Box AI Reasoning**: Explainable AI panel showing detected signals and rationale (not black-box).
+- **Emergency Playbook**: Auto-activates for Red cases with immediate protocols (Identity confirmation, location check).
+- **Training Mode (Uplift)**: Toggleable mode that provides coaching feedback ("Training Insight") instead of just clinical scores.
+- **Bilingual Interface**: Seamless English/Hindi toggle for broader accessibility.
+- **Supervisor Stats**: Aggregated dashboard view for monitoring high-risk cases.
 
-To learn more about Next.js, take a look at the following resources:
+## Limitations
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Internet Dependency**: Audio analysis requires an active internet connection (Gemini API).
+- **Language Nuance**: Current model supports Hindi/English but may miss specific dialectal nuances. The "Human Override" feature allows ASHAs to correct misinterpretations.
+- **Device Storage**: Patient history is local to the device. Clearing browser cache loses history.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## How to Run
 
-## Deploy on Vercel
+1.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2.  **Environment Setup**:
+    Create `.env.local` and add your Gemini API key:
+    ```bash
+    GEMINI_API_KEY=your_api_key_here
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
+    Access the app at `http://localhost:3000`
+
+---
+*Built for the "Advanced Agentic Coding" demonstration.*

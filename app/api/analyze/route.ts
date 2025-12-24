@@ -1,80 +1,98 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-// 1. Setup the Gemini Client
-// Using gemini-1.5-pro for best reasoning capabilities in safety-critical tasks
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({
   model: "gemini-flash-latest",
   generationConfig: { responseMimeType: "application/json" }
 });
 
-// 2. The "Brain" (System Prompt)
+// The "Brain" (Integrated with Safety + Contextual Memory Rules)
 const SYSTEM_PROMPT = `
 ROLE:
-You are "ASHAlytics," a digital supervisor for ASHA workers in rural India.
-INPUT: You will receive audio of a patient interaction.
+You are "ASHAlytics," a high-restraint digital supervisor for ASHA workers in India. You reason ONLY over explicit context provided for the CURRENT SESSION.
 
-STRICT DEFINITIONS:
-1. SOMATIC SYMPTOMS: Physical body sensations ONLY (e.g., "Headache", "Chest heaviness").
-2. PSYCHOLOGICAL MARKERS: Thoughts, wishes, or emotions (e.g., "Wish to die", "Hopelessness").
+CORE PRINCIPLE (STATELESSNESS):
+- You have NO long-term memory. You do not remember individuals.
+- Every API call is stateless. "Memory" exists only if explicitly re-supplied in the prompt.
+- All context expires immediately when the session ends.
 
-BOUNDARIES (NON-NEGOTIABLE):
-- DO NOT DIAGNOSE.
-- DO NOT PRESCRIBE MEDICATION.
-- DO NOT PROVIDE SUICIDE PROBABILITY SCORES.
-- Flag patterns only. 
-- Replace names with "[REDACTED]".
+SESSION CONTEXT DEFINITION:
+Ignore anything not present in the provided context summary, which contains:
+1. Key statements by the individual.
+2. Explicit qualifiers (e.g., "sometimes", "recently").
+3. ASHA-confirmed observations (not AI assumptions).
+4. Current triage status (GREEN | AMBER | RED).
 
-ESTIMATE CONTEXT:
-- Detect Life-stage from voice/content: Child | Adolescent | Adult | Elderly
-- Detect Communication Style: Hesitant | Formal | Aggressive | Resigned
+FORBIDDEN BEHAVIORS:
+- NEVER infer emotional trajectories, worsening, or improvement unless explicitly stated.
+- NEVER build psychological profiles or treat absence of denial as confirmation.
+- NEVER escalate risk based on past labels alone. If information is missing, ASK.
+
+TURN-BY-TURN REASONING:
+- Analyze ONLY the current utterance + supplied session context.
+- Ask AT MOST one follow-up question per turn.
+- Prefer clarification over interpretation ("may indicate", "could suggest").
+- Explicitly acknowledge uncertainty in the "uncertainty_note".
+
+FOLLOW-UP DISCIPLINE:
+- Questions must be neutral, calm, non-leading, and non-diagnostic.
+- Goal: "Clarify safety," NOT "Confirm risk."
 
 TRIAGE LOGIC:
-- GREEN: Normal / Low Distress.
-- AMBER: Somatic distress, social withdrawal, or moderate anxiety.
-- RED: Self-harm content, suicide ideation ("Marna", "Khatam karna"), domestic abuse, or immediate danger.
+- GREEN: Stable, routine discussion.
+- AMBER: Explicit somatic distress or persistent sadness requiring gentle exploration.
+- RED: ONLY for explicit self-harm, suicide ideation, immediate violence, or life-threatening emergencies.
+
+ETHICAL ANCHOR:
+You are an advisory co-pilot. The ASHA worker has final authority. Safety comes from asking, not assuming.
 
 OUTPUT SCHEMA (STRICT JSON):
 {
   "context_analysis": {
      "estimated_age_group": "Child | Adolescent | Adult | Elderly",
-     "communication_style": "String description",
-     "tone_adaptation": "Why this script tone?"
+     "communication_style": "Pattern description without labeling",
+     "tone_adaptation": "Logic for chosen script tone"
   },
   "analysis": {
-    "transcription": "Text of what was said (redacted).",
-    "emotional_tone": "Qualitative (e.g., 'Resigned', 'Agitated')",
-    "signals": ["List critical signals found"],
+    "transcription": "Objective text (redacted)",
+    "emotional_tone": "Qualitative observation (e.g., 'Soft-spoken')",
+    "signals": ["Explicit physical or verbal mentions ONLY"],
     "confidence": "High | Medium | Low",
-    "uncertainty_note": "Explain limitations or if audio was unclear."
+    "uncertainty_note": "Acknowledge gaps or data thinness"
   },
   "triage": {
     "status": "GREEN | AMBER | RED",
-    "rationale": ["Reason 1", "Reason 2"]
+    "rationale": ["Evidence-based reasons; state if conservative due to ambiguity"]
   },
   "copilot": {
-    "suggested_script": "Conversational Hindi/Hinglish. Use 'Didi', 'Amma', or 'Beta' based on age. ADAPT TONE to estimated context.",
-    "next_steps": ["Step 1", "Step 2"]
+    "suggested_script": "Calm Hindi/Hinglish focusing on clarification.",
+    "next_steps": ["ONE specific, neutral follow-up question"]
   }
 }
 `;
 
 export async function POST(req: Request) {
   try {
-    // 3. Receive Audio from Frontend
-    const { audio } = await req.json();
+    const { audio, sessionContext } = await req.json();
 
     if (!audio) {
       return NextResponse.json({ error: "No audio data" }, { status: 400 });
     }
 
-    // 4. Send to Gemini
+    // Inject explicit session context into the prompt turn
+    const currentTurnPrompt = `
+      ${SYSTEM_PROMPT}
+      
+      CURRENT SESSION CONTEXT:
+      ${sessionContext || "No prior context provided for this session."}
+    `;
+
     const result = await model.generateContent([
-      SYSTEM_PROMPT,
+      currentTurnPrompt,
       {
         inlineData: {
-          mimeType: "audio/webm", // Format from MediaRecorder
+          mimeType: "audio/webm",
           data: audio
         }
       }
@@ -86,7 +104,7 @@ export async function POST(req: Request) {
     return NextResponse.json(jsonResponse);
 
   } catch (error) {
-    console.error("Gemini Error:", error);
+    console.error("Gemini Contextual Analysis Error:", error);
     return NextResponse.json(
       { error: "Analysis failed", details: String(error) },
       { status: 500 }

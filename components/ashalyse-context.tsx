@@ -12,6 +12,13 @@ interface PatientData {
   lastVisitDate: string;
 }
 
+// New Interface for updating session analytics
+interface AnalysisUpdate {
+  stressScore: number;
+  intent: string;
+  mismatch: boolean;
+}
+
 interface AshalyseContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -22,8 +29,17 @@ interface AshalyseContextType {
   aptID: string | null;
   currentPatient: PatientData | null;
   saveSession: (triageStatus: string) => void;
-  clearCurrentInteraction: () => void; // New method for stateless safety
+  
+  // Safety & State Management
+  clearCurrentInteraction: () => void;
   t: (key: string) => string;
+
+  // --- NEW: Deep Context Fields ---
+  stressScoreAverage: number; // The running average (0-100)
+  stressHistory: number[];    // Full history of scores for this session
+  currentIntent: string | null;
+  aiReasoningMismatch: boolean;
+  updateSessionAnalysis: (data: AnalysisUpdate) => void;
 }
 
 const AshalyseContext = createContext<AshalyseContextType | undefined>(undefined);
@@ -47,6 +63,16 @@ export function AshalyseProvider({ children }: { children: React.ReactNode }) {
   const [ashaID, setAshaID] = useState<string | null>(null);
   const [aptID, setAptID] = useState<string | null>(null);
   const [currentPatient, setCurrentPatient] = useState<PatientData | null>(null);
+
+  // --- NEW: Session Analytical State ---
+  const [stressHistory, setStressHistory] = useState<number[]>([]);
+  const [currentIntent, setCurrentIntent] = useState<string | null>(null);
+  const [aiReasoningMismatch, setAiReasoningMismatch] = useState(false);
+
+  // Calculate Running Average
+  const stressScoreAverage = stressHistory.length > 0 
+    ? Math.round(stressHistory.reduce((a, b) => a + b, 0) / stressHistory.length) 
+    : 0;
 
   const generateAptID = (district: string) => {
     const randomHex = Math.floor(Math.random() * 0xfff).toString(16).toUpperCase().padStart(3, '0');
@@ -75,10 +101,21 @@ export function AshalyseProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("ashalyse_patients", JSON.stringify(storedPatients));
   };
 
+  // --- Update Analytical State per Turn ---
+  const updateSessionAnalysis = ({ stressScore, intent, mismatch }: AnalysisUpdate) => {
+    setStressHistory(prev => [...prev, stressScore]);
+    setCurrentIntent(intent);
+    setAiReasoningMismatch(mismatch);
+  };
+
   // --- SAFETY METHOD: CLEAR SESSION ---
   const clearCurrentInteraction = () => {
     setAptID(null);
     setCurrentPatient(null);
+    // Reset Analytical Context
+    setStressHistory([]);
+    setCurrentIntent(null);
+    setAiReasoningMismatch(false);
   };
 
   const t = (key: string) => {
@@ -87,7 +124,23 @@ export function AshalyseProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AshalyseContext.Provider value={{ 
-      language, setLanguage, mode, setMode, ashaID, login, aptID, currentPatient, saveSession, clearCurrentInteraction, t 
+      language, 
+      setLanguage, 
+      mode, 
+      setMode, 
+      ashaID, 
+      login, 
+      aptID, 
+      currentPatient, 
+      saveSession, 
+      clearCurrentInteraction, 
+      t,
+      // New Exports
+      stressScoreAverage,
+      stressHistory,
+      currentIntent,
+      aiReasoningMismatch,
+      updateSessionAnalysis
     }}>
       {children}
     </AshalyseContext.Provider>

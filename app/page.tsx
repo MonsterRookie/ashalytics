@@ -223,7 +223,13 @@ function DashboardContent() {
             </ScrollArea>
 
             <div className="p-2 bg-slate-100 border-t border-slate-200">
-              <ConsultationButton status={status} onStart={startRecording} onStop={stopRecording} onReset={resetSession} />
+             <ConsultationButton 
+                status={status} 
+                onStart={startRecording} 
+                onStop={stopRecording} 
+                onReset={resetSession} 
+                hasSessionData={transcriptHistory.length > 0} // Add this line
+              />
             </div>
           </div>
 

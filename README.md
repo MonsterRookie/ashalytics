@@ -1,62 +1,50 @@
-# ASHAlytics: Safety-Critical AI Copilot for ASHA Workers
+# ASHAlytics: Deep Contextual AI Copilot for ASHA Workers
 
-**ASHAlytics** is a human-in-the-loop AI web application designed to assist Accredited Social Health Activists (ASHAs) in rural India. It analyzes short audio snippets of patient conversations to detect distress patterns, assisting with triage and providing safe, explainable next steps.
+**ASHAlytics** is a safety-critical, human-in-the-loop AI decision support system designed for Accredited Social Health Activists (ASHAs) in India. By moving beyond simple keyword triggers, it employs a **Conflict Resolution Layer** to distinguish between genuine clinical distress, cultural idioms, and dark humour.
 
-## Ethics & Safety (Non-Negotiable)
+## 🚀 Advanced Clinical Intelligence
 
-This system is built with **Safety First** principles:
-1.  **No Diagnosis**: ASHAlytics never diagnoses conditions or prescribes medication.
-2.  **Human Authority**: The ASHA worker is the final decision-maker. The AI provides *advisory* signals only.
-3.  **Privacy**:
-    - No audio is stored on servers permanently (processed ephemerally).
-    - No patient names or biometrics are captured.
-    - Patient tracking is done via **Anonymous Patient Tracking IDs (APT-ID)** stored locally on the device (LocalStorage).
-4.  **No Direct Patient Interaction**: The AI never speaks to the patient. It is a tool for the ASHA worker.
-5.  **Red-Level Protocol**: Immediate "Red" triage triggers a rigid Emergency Playbook (Stay, Involve Family, Contact PHC), bypassing standard conversational scripts.
+### 1. Conflict Resolution Layer (Risk Scoring)
+The system calculates triage risk by merging literal content with emotional context to eliminate false positives like sarcastic mentions of "death":
+- **Mathematical Logic**: `Final Risk = [Keyword Weight] × [Sentiment Multiplier]`
+- **18-Point Sentiment Spectrum**: Includes granular multipliers such as:
+    - **Hyperbolic Joy (0.1x)**: Neutralizes "death" keywords used in happy metaphors.
+    - **Cultural Fatalism (1.1x)**: Recognizes "God's will" (*Bhagwan ki marzi*) as a unique coping context.
+    - **Confusion/Disorientation (1.5x)**: High-priority multiplier for potential neurological/physiological emergencies.
+    - **Despair (2.5x)**: Maximal risk escalation for active hopelessness.
 
-## Architecture
+### 2. Live Stress Engine & Pattern Analysis
+The system monitors speech patterns in real-time to generate a **Stress Index (0–100)**:
+- **Linguistic Flux (25%)**: Tracks stuttering and filler word frequency (*matlab, um, ah*).
+- **Fragmentation (35%)**: Detects shifts from structured speech to broken "panic" phrases.
+- **Volatility (40%)**: Measures the velocity of shifts from neutral to negative sentiment.
+- **Pattern Mismatch Alert**: Explictly warns the ASHA worker if Tone (Affect) does not match the severity of words (e.g., laughing while reporting pain).
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + Shadcn UI
-- **AI Model**: Google Gemini flash - latest (Server-Side Analysis)
-- **State Management**: React Context + LocalStorage
-- **Audio**: Browser MediaRecorder API -> Base64 -> Server Action
+### 3. Decision Co-Pilot (ASHA Control Cockpit)
+- **Internal Check-Questions**: Generates turn-specific clinical probes for the ASHA worker to resolve ambiguity.
+- **Final ASHA Override**: Provides explicit **Stable | Monitor | Crisis** buttons. An ASHA override immediately updates the global triage status and is logged for safety audits.
+- **Emergency Playbook**: Instant activation of rigid protocols for **RED** status, including "Stay with Patient" and "Call TeleMANAS".
 
-## Features
+## 🛡️ Non-Negotiable Safety Protocols
 
-- **Real-time Audio Analysis**: Detects emotional tone, somatic symptoms, and psychological markers.
-- **Triage System**: Auto-classifies into Green (Low), Amber (Moderate), or Red (Critical) with visual status indicators.
-- **White-Box AI Reasoning**: Explainable AI panel showing detected signals and rationale (not black-box).
-- **Emergency Playbook**: Auto-activates for Red cases with immediate protocols (Identity confirmation, location check).
-- **Training Mode (Uplift)**: Toggleable mode that provides coaching feedback ("Training Insight") instead of just clinical scores.
-- **Bilingual Interface**: Seamless English/Hindi toggle for broader accessibility.
-- **Supervisor Stats**: Aggregated dashboard view for monitoring high-risk cases.
+1.  **Safety Override Rule**: Specific physiological symptoms (e.g., "can't breathe") bypass all multipliers and trigger immediate escalation.
+2.  **Human Authority**: The AI is purely advisory; the ASHA worker retains final clinical authority via manual override.
+3.  **Privacy-First Design**:
+    - **Statelessness**: No long-term memory; context is re-supplied per turn to ensure no data persistence.
+    - **Anonymous Tracking**: Patients are identified via locally stored **APT-IDs**; no biometrics or names are processed.
 
-## Limitations
+## 🏗️ Technical Architecture
 
-- **Internet Dependency**: Audio analysis requires an active internet connection (Gemini API).
-- **Language Nuance**: Current model supports Hindi/English but may miss specific dialectal nuances. The "Human Override" feature allows ASHAs to correct misinterpretations.
-- **Device Storage**: Patient history is local to the device. Clearing browser cache loses history.
+- **Frontend**: Next.js 14 (App Router) + Tailwind CSS + Shadcn UI.
+- **AI Engine**: Google Gemini Flash (Latest) with custom CDSS prompting.
+- **State**: React Context with Running Average Stress tracking.
+- **Audio**: Web MediaRecorder API -> Base64 Ephemeral Processing.
 
-## How to Run
+## 📦 Getting Started
 
-1.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
-
-2.  **Environment Setup**:
-    Create `.env.local` and add your Gemini API key:
-    ```bash
-    GEMINI_API_KEY=your_api_key_here
-    ```
-
-3.  **Run Development Server**:
-    ```bash
-    npm run dev
-    ```
-    Access the app at `http://localhost:3000`
+1. **Install Dependencies**: `npm install`
+2. **Environment**: Add `GEMINI_API_KEY` to `.env.local`
+3. **Run Dev**: `npm run dev`
 
 ---
-*Built for the "Advanced Agentic Coding" demonstration.*
+*Developed for Advanced Agentic Coding demonstrations. Safety-critical CDSS implementation.*

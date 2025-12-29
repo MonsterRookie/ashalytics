@@ -9,9 +9,10 @@ interface ButtonProps {
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
+  hasSessionData?: boolean; // New prop to track if session is active
 }
 
-export function ConsultationButton({ status, onStart, onStop, onReset }: ButtonProps) {
+export function ConsultationButton({ status, onStart, onStop, onReset, hasSessionData = false }: ButtonProps) {
   const [seconds, setSeconds] = useState(0);
 
   // Timer Logic
@@ -30,20 +31,7 @@ export function ConsultationButton({ status, onStart, onStop, onReset }: ButtonP
     return `${min}:${sec < 10 ? "0" : ""}${sec}`;
   };
 
-  // 1. IDLE STATE
-  if (status === "idle") {
-    return (
-      <button
-        onClick={onStart}
-        className="w-full h-16 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200/50 flex items-center justify-center gap-3 transition-all active:scale-[0.98] animate-in fade-in zoom-in-95 duration-300"
-      >
-        <Mic className="h-5 w-5" />
-        <span className="text-base font-semibold tracking-wide">Tap to Consult</span>
-      </button>
-    );
-  }
-
-  // 2. RECORDING STATE
+  // 1. RECORDING STATE (Priority 1)
   if (status === "recording") {
     return (
       <button
@@ -67,7 +55,7 @@ export function ConsultationButton({ status, onStart, onStop, onReset }: ButtonP
     );
   }
 
-  // 3. PROCESSING STATE
+  // 2. PROCESSING STATE (Priority 2)
   if (status === "processing") {
     return (
       <button disabled className="w-full h-16 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center gap-2 cursor-not-allowed animate-pulse">
@@ -77,7 +65,21 @@ export function ConsultationButton({ status, onStart, onStop, onReset }: ButtonP
     );
   }
 
-  // 4. COMPLETED (SPLIT BUTTONS)
+  // 3. IDLE STATE (Only if NO session data exists)
+  if (status === "idle" && !hasSessionData) {
+    return (
+      <button
+        onClick={onStart}
+        className="w-full h-16 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200/50 flex items-center justify-center gap-3 transition-all active:scale-[0.98] animate-in fade-in zoom-in-95 duration-300"
+      >
+        <Mic className="h-5 w-5" />
+        <span className="text-base font-semibold tracking-wide">Tap to Consult</span>
+      </button>
+    );
+  }
+
+  // 4. ACTIVE SESSION STATE (Completed OR Idle with History)
+  // This ensures buttons persist even if status reverts to 'idle' on error/timeout
   return (
     <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards">
       <Button

@@ -25,18 +25,24 @@ Do not flag keywords blindly. Calculate "Final Risk" using this formula:
 - Vague Distress ("Not feeling right"): 0.5
 
 **Sentiment Multipliers (The "Context" Factor):**
-1.  **Ecstatic / Hyperbolic Joy (0.1x):** E.g., "Khushi ke maare marr jau" -> Risk 0.1 (GREEN).
-2.  **Sarcastic / Dark Humour (0.3x):** E.g., "My life is a joke" (laughing) -> Risk 0.3 (AMBER).
-3.  **Relief / Gratitude (0.5x):** Mentioning past pain while recovering.
-4.  **Casual / Conversational (0.8x):** Routine storytelling.
-5.  **Neutral / Matter-of-fact (1.0x):** Standard reporting.
-6.  **Stoic / Masking (1.1x):** Under-reporting severe symptoms.
-7.  **Exhausted / Lethargic (1.2x):** Fatigue-driven distress.
-8.  **Frustrated / Irritated (1.3x):** Precursor to crisis.
-9.  **Anxious / Tremulous (1.4x):** Elevates mild symptoms to AMBER.
-10. **Agitated / Angry (1.6x):** High potential for impulsive harm.
-11. **Fearful / Panicked (1.8x):** High sensitivity mode.
-12. **Despair / Hopelessness (2.0x):** "Marr jau" + Despair -> Risk 2.0 (RED).
+1.  **Hyperbolic / Ecstatic Joy (0.1x):** Pure metaphor. "Khushi ke maare marr jau" (Dying of happiness). Cancels risk.
+2.  **Playful / Teasing (0.2x):** Lighthearted banter. "Arre aap toh jaan le loge meri" (You'll take my life - jokingly).
+3.  **Sarcastic / Dark Humour (0.3x):** Detecting deflection via humor. "Meri kismat hi kharaab hai, haha". Flags as Low Amber.
+4.  **Relief / Gratitude (0.5x):** Post-crisis calm. "Ab saans aayi hai". Reduces weight of past symptom mention.
+5.  **Dismissive / Minimizing (0.6x):** Active avoidance. "Chhodo, ye sab toh chalta rehta hai". Lowers immediate panic but flags for follow-up.
+6.  **Casual / Conversational (0.8x):** Routine storytelling. "Kal pair dukh raha tha".
+7.  **Neutral / Matter-of-fact (1.0x):** Baseline. Statements are taken literally. "Mujhe chakkar aa raha hai".
+8.  **Cultural Fatalism (Religious) (1.1x):** "Sab Bhagwan ki marzi hai". Can be resilience OR giving up. Slight risk bump.
+9.  **Stoic / Masking (1.2x):** High-risk suppression. Tone is flat, but words suggest pain. Needs probing.
+10. **Exhausted / Lethargic (1.3x):** Physical or mental depletion. "Ab himmat nahi bachi".
+11. **Frustrated / Irritated (1.4x):** Precursor to aggression or breakdown. "Tang aa gaya hoon main".
+12. **Confused / Disoriented (1.5x):** Critical Medical Signal. "Pata nahi main kahan hoon". High risk for neurological issues.
+13. **Anxious / Tremulous (1.6x):** High physiological arousal. Rapid speech, breathlessness.
+14. **Guilt / Burden (1.7x):** High suicide predictor. "Main sabpe bojh hoon" (I am a burden on everyone).
+15. **Agitated / Angry (1.8x):** Volatile. Risk of harm to self or others.
+16. **Fearful / Panicked (1.9x):** Active "Fight or Flight". Immediate danger perception.
+17. **Resigned / Defeated (2.0x):** The "Giving Up" phase. Quiet and final. "Ab bas, aur nahi".
+18. **Despair / Hopelessness (2.5x):** Max Risk. Total loss of hope. Any negative keyword here triggers immediate RED.
 
 **SAFETY OVERRIDE:**
 If the MOST RECENT turn contains a specific, physiological symptom (e.g., "can't breathe", "bleeding", "chest pain"), IGNORE the multipliers. Treat as 1.0 or higher.
@@ -53,7 +59,7 @@ Output a score from 0 (Zen) to 100 (Active Panic).
 ---
 ### 3. INTENT RECOGNITION
 Classify the user's primary intent into one of these flags:
-[Venting], [Seeking Medical Help], [Sarcastic Joy], [Dark Humour], [Stoicism], [Hyperbolic Expression], [Routine Reporting], [Desperate Plea], [Confusion], [Aggression], [Gratitude], [Fear], [Resignation], [Masking].
+[Venting], [Seeking Medical Help], [Sarcastic Joy], [Dark Humour], [Stoicism], [Hyperbolic Expression], [Routine Reporting], [Desperate Plea], [Confusion], [Aggression], [Gratitude], [Fear], [Resignation], [Masking], [Fatalism].
 
 **Pattern Mismatch Detection:**
 If the Tone (Affect) is Positive/Laughing but Content is Severe (Pain/Loss), flag 'mismatch_detected': true.
@@ -77,7 +83,7 @@ If the Tone (Affect) is Positive/Laughing but Content is Severe (Pain/Loss), fla
     "stress_score": 0-100,
     "intent_flag": "[Label]",
     "mismatch_detected": boolean,
-    "sentiment_category": "One of the 12 categories",
+    "sentiment_category": "One of the 18 categories",
     "confidence": "High | Medium | Low"
   },
   "triage": {

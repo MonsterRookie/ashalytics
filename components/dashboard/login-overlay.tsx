@@ -61,7 +61,7 @@ export function LoginOverlay() {
             <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-stone-100">
                 <Lock className="h-3 w-3 text-stone-400" />
                 <p className="text-[10px] text-center text-stone-400 font-medium">
-                Official Government Access Only • 256-bit Encrypted
+                Authorized Personnel Only
                 </p>
             </div>
           </form>
